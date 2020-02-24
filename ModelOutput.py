@@ -73,6 +73,28 @@ class ModelOutput(object):
                 joint[output] = Joint(angle, moment, power, force)
                 #joint[output] = core.Newton.Newton(angle, force, moment, power)
 
+        left_centers = {}
+        right_centers = {}
+
+        for side, joint_center in zip(("Left", "Right"), (left_centers, right_centers)):
+            for parent, child in zip(("Pelvis", "Thigh"), ("Thigh", "Tib")):
+
+                if parent == "Pelvis":
+                    center = core.Point.Point(data[parent + "_" + side + child + "_score"]["X"]["data"],
+                                              data[parent + "_" + side + child + "_score"]["Y"]["data"],
+                                              data[parent + "_" + side + child + "_score"]["Z"]["data"])
+                else:
+                    center = core.Point.Point(data[side + parent + "_" + side + child + "_score"]["X"]["data"],
+                                            data[side + parent + "_" + side + child + "_score"]["Y"]["data"],
+                                            data[side + parent + "_" + side + child + "_score"]["Z"]["data"])
+
+                joint_center[parent + "_" + child + "_score"] = center
+
+        left_joints["Hip"].set_center(left_centers["Pelvis_Thigh_score"])
+        left_joints["Knee"].set_center(left_centers["Thigh_Tib_score"])
+        right_joints["Hip"].set_center(right_centers["Pelvis_Thigh_score"])
+        right_joints["Knee"].set_center(right_centers["Thigh_Tib_score"])
+
         self._left_leg = Leg(left_joints["Hip"], left_joints["Knee"], left_joints["Ankle"])
         self._right_leg = Leg(right_joints["Hip"], right_joints["Knee"], right_joints["Ankle"])
 
